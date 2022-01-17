@@ -3,7 +3,7 @@
 <script src="pixastic.worker.js"></script>
 <!--<script type="text/javascript" src="http://enotionz.github.io/pixastic-docs/lib/download/pixastic.js"></script>-->
 
-<img src="pic1.jpg" id="el_pic" style="width:40%;height:40%" onload="Procces();" />
+<img src="pic2.jpg" id="el_pic" style="width:40%;height:40%" onload="Procces();" />
 <br />
 <input type="file" id="btn_LoadPic" value="Load Pic" />
 <script>
@@ -25,7 +25,7 @@ Dark range:
 Pure yellow:
 <label id="RedMax">X</label>,<label id="GreenMax">X</label>
 <br />
-<input type="range" id="PureYellow" style="width:35%" onchange="OnPercentsChanges();" value="85" />
+<input type="range" id="PureYellow" style="width:35%" onchange="OnPercentsChanges();" value="70" />
 <br />
 <br />
 <input type="button" value="calculate" onclick="GetInfo();" />
@@ -75,14 +75,14 @@ Pure yellow:
 
         ctx.drawImage(el_pic, 0, 0, NWidth, NHeight, 0, 0, el_norm.width, el_norm.height);
 
-        GetInfo();
-
         Normalize();
         //LimitYellows();
-        P = new Pixastic(ctx);
+        //P = new Pixastic(ctx);
 
         //posterize();
         //equalize();
+
+        GetInfo();
     }
 
     function LimitYellows() {
@@ -269,17 +269,16 @@ Pure yellow:
 
         ClearLog();
 
-        log("Points: " + Count_P);
+        //log("Points: " + Count_P);
 
-        log("AVG RGB: " + AVG_R + " , " + AVG_G + " , " + AVG_B);
-        log("LAVG RGB: " + LAVG_R + " , " + LAVG_G + " , " + LAVG_B);
-        log("DAVG RGB: " + DAVG_R + " , " + DAVG_G + " , " + DAVG_B);
+        //log("AVG RGB: " + AVG_R + " , " + AVG_G + " , " + AVG_B);
+        //log("LAVG RGB: " + LAVG_R + " , " + LAVG_G + " , " + LAVG_B);
+        //log("DAVG RGB: " + DAVG_R + " , " + DAVG_G + " , " + DAVG_B);
 
-        log("Count RGBYD: " + Count_R + " , " + Count_G + " , " + Count_B + " , " + Count_Y + " , " + Count_D);
+        //log("Count RGBYD: " + Count_R + " , " + Count_G + " , " + Count_B + " , " + Count_Y + " , " + Count_D);
 
         log("Yellow Percent: " + Count_Y / (Count_P - Count_D));
         log("Dark Percent: " + Count_D / Count_P);
-        log("");
     }
 
     function posterize() {
