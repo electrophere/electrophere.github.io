@@ -7,7 +7,7 @@
 <br />
 <input type="file" id="btn_LoadPic" value="Load Pic" />
 <script>
-    document.getElementById("btn_LoadPic").onchange = function (){
+    document.getElementById("btn_LoadPic").onchange = function () {
         const [file] = document.getElementById("btn_LoadPic").files
         if (file) {
             document.getElementById("el_pic").src = URL.createObjectURL(file)
@@ -17,14 +17,15 @@
 <br />
 <canvas id="el_norm" style="width:40%;height:40%"></canvas>
 <br />
-Dark range: 
+Dark range:
+<label id="DarkMax">X</label>
 <br />
-<input type="range" id="DarkRange" style="width:35%" onchange="OnPercentsChanges();" value="0" />
+<input type="range" id="DarkRange" style="width:35%" onchange="OnPercentsChanges();" value="30" />
 <br />
 Pure yellow:
-<label id="RedMax">R</label>,<label id="GreenMax">G</label>
+<label id="RedMax">X</label>,<label id="GreenMax">X</label>
 <br />
-<input type="range" id="PureYellow" style="width:35%" onchange="OnPercentsChanges();" value="75" />
+<input type="range" id="PureYellow" style="width:35%" onchange="OnPercentsChanges();" value="85" />
 <br />
 <br />
 <input type="button" value="calculate" onclick="GetInfo();" />
@@ -38,12 +39,14 @@ Pure yellow:
     }
 
     function log(s) {
-        document.getElementById("Console").innerText +="\n" + s;
+        document.getElementById("Console").innerText += "\n" + s;
     }
 
     function OnPercentsChanges() {
         var PureYellow = 255 - ((document.getElementById('PureYellow').value / 100) * 255);
         var DarkRange = (document.getElementById('DarkRange').value / 100) * 255;
+
+        document.getElementById('DarkMax').style.color = 'rgb(' + DarkRange +',0,0)';
 
         document.getElementById('GreenMax').style.color = 'rgb(' + (255 - PureYellow) + ',255,0)';
         document.getElementById('RedMax').style.color = 'rgb(255,' + (255 - PureYellow) + ',0)';
