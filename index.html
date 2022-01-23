@@ -1,302 +1,309 @@
-<script src="pixastic.js"></script>
-<script src="pixastic.effects.js"></script>
-<script src="pixastic.worker.js"></script>
-<!--<script type="text/javascript" src="http://enotionz.github.io/pixastic-docs/lib/download/pixastic.js"></script>-->
+<html>
+<head>
+    <meta content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+    <script src="pixastic.js"></script>
+    <script src="pixastic.effects.js"></script>
+    <script src="pixastic.worker.js"></script>
+    <!--<script type="text/javascript" src="http://enotionz.github.io/pixastic-docs/lib/download/pixastic.js"></script>-->
 
-<img src="pic2.jpg" id="el_pic" style="width:40%;height:40%" onload="Procces();" />
-<br />
-<input type="file" id="btn_LoadPic" value="Load Pic" />
-<script>
-    document.getElementById("btn_LoadPic").onchange = function () {
-        const [file] = document.getElementById("btn_LoadPic").files
-        if (file) {
-            document.getElementById("el_pic").src = URL.createObjectURL(file)
-        }
-    }
-</script>
-<br />
-<canvas id="el_norm" style="width:40%;height:40%"></canvas>
-<br />
-Dark range:
-<label id="DarkMax">X</label>
-<br />
-<input type="range" id="DarkRange" style="width:35%" onchange="OnPercentsChanges();" value="30" />
-<br />
-Pure yellow:
-<label id="RedMax">X</label>,<label id="GreenMax">X</label>
-<br />
-<input type="range" id="PureYellow" style="width:35%" onchange="OnPercentsChanges();" value="70" />
-<br />
-<br />
-<input type="button" value="calculate" onclick="GetInfo();" />
-<br />
-<div id="Console"></div>
-
-<script type="text/javascript">
-
-    function ClearLog(s) {
-        document.getElementById("Console").innerText = "";
-    }
-
-    function log(s) {
-        document.getElementById("Console").innerText += "\n" + s;
-    }
-
-    function OnPercentsChanges() {
-        var PureYellow = 255 - ((document.getElementById('PureYellow').value / 100) * 255);
-        var DarkRange = (document.getElementById('DarkRange').value / 100) * 255;
-
-        document.getElementById('DarkMax').style.color = 'rgb(' + DarkRange +',0,0)';
-
-        document.getElementById('GreenMax').style.color = 'rgb(' + (255 - PureYellow) + ',255,0)';
-        document.getElementById('RedMax').style.color = 'rgb(255,' + (255 - PureYellow) + ',0)';
-
-    }
-
-    OnPercentsChanges();
-
-    var el_pic = document.getElementById("el_pic");// as HTMLImageElement;
-    var el_norm = document.getElementById("el_norm");//as HTMLCanvasElement;
-    var P;
-    var ctx;
-
-    function Procces() {
-
-        var canvas_norm = document.createElement("canvas");
-        ctx = el_norm.getContext("2d");
-        var NWidth = el_pic.naturalWidth;
-        var NHeight = el_pic.naturalHeight;
-
-        var Width = el_norm.width;
-        var Height = el_norm.height;
-
-        el_norm.width = NWidth;
-        el_norm.height = NHeight;
-
-        ctx.drawImage(el_pic, 0, 0, NWidth, NHeight, 0, 0, el_norm.width, el_norm.height);
-
-        Normalize();
-        //LimitYellows();
-        //P = new Pixastic(ctx);
-
-        //posterize();
-        //equalize();
-
-        GetInfo();
-    }
-
-    function LimitYellows() {
-
-        var ctx = el_norm.getContext("2d");
-        var Data = ctx.getImageData(0, 0, el_norm.width, el_norm.height);
-        var data = Data.data;
-
-        var RAvg = -1;
-        var GAvg = -1;
-        var BAvg = -1;
-        var Diff_RG_avg = -1
-        var Diff_RB_avg = -1
-        var Diff_GB_avg = -1
-
-        for (var i = 0; i < data.length; i += 4) {
-
-            RAvg = GetAvg(RAvg, data[i]);
-            GAvg = GetAvg(GAvg, data[i + 1]);
-            BAvg = GetAvg(BAvg, data[i + 2]);
-
-            var DT = Distance(data);
-
-            Diff_RG_avg = GetAvg(Diff_RG_avg, DT.RG);
-            Diff_RB_avg = GetAvg(Diff_RB_avg, DT.RB);
-            Diff_GB_avg = GetAvg(Diff_GB_avg, DT.GB);
-        }
-
-        for (var i = 0; i < data.length; i += 4) {
-
-            var Mono = data[i] + data[i + 1] + data[i + 2];
-            Mono = Mono / 3;
-            var DT = Distance(data);
-            if (DT.RG < Diff_RG_avg) {
-
-                data[i] = Mono; // red
-                data[i + 1] = Mono;// green
-                data[i + 2] = Mono; // blue
-
-                //data[i] = 255; // red
-                //data[i + 1] = 50;// green
-                //data[i + 2] = 10; // blue
-            }
-            else {
+    <img src="pic2.jpg" id="el_pic" style="width:40%;height:40%" onload="Procces();" />
+    <br />
+    <input type="file" id="btn_LoadPic" value="Load Pic" />
+    <script>
+        document.getElementById("btn_LoadPic").onchange = function () {
+            const [file] = document.getElementById("btn_LoadPic").files
+            if (file) {
+                document.getElementById("el_pic").src = URL.createObjectURL(file)
             }
         }
+    </script>
+    <br />
+    <canvas id="el_norm" style="width:40%;height:40%"></canvas>
+    <br />
+    Dark range:
+    <label id="DarkMax">X</label>
+    <br />
+    <input type="range" id="DarkRange" style="width:35%" onchange="OnPercentsChanges();" value="30" />
+    <br />
+    Pure yellow:
+    <label id="RedMax">X</label>,<label id="GreenMax">X</label>
+    <br />
+    <input type="range" id="PureYellow" style="width:35%" onchange="OnPercentsChanges();" value="70" />
+    <br />
+    <br />
+    <input type="button" value="calculate" onclick="GetInfo();" />
+    <br />
+    <div id="Console"></div>
 
-        ctx.putImageData(Data, 0, 0);
+    <script type="text/javascript">
 
-        function Distance(data) {
-            return {
-                RG: Distance(data[i], data[i + 1]),
-                RB: Distance(data[i], data[i + 2]),
-                GB: Distance(data[i + 1], data[i + 2])
-            };
+        function ClearLog(s) {
+            document.getElementById("Console").innerText = "";
+        }
 
-            function Distance(x1, x2) {
-                if (x1 < x2)
-                    return x2 - x1;
-                else
-                    return x1 - x2;
+        function log(s) {
+            document.getElementById("Console").innerText += "\n" + s;
+        }
 
+        function OnPercentsChanges() {
+            var PureYellow = 255 - ((document.getElementById('PureYellow').value / 100) * 255);
+            var DarkRange = (document.getElementById('DarkRange').value / 100) * 255;
+
+            document.getElementById('DarkMax').style.color = 'rgb(' + DarkRange + ',0,0)';
+
+            document.getElementById('GreenMax').style.color = 'rgb(' + (255 - PureYellow) + ',255,0)';
+            document.getElementById('RedMax').style.color = 'rgb(255,' + (255 - PureYellow) + ',0)';
+
+        }
+
+        OnPercentsChanges();
+
+        var el_pic = document.getElementById("el_pic");// as HTMLImageElement;
+        var el_norm = document.getElementById("el_norm");//as HTMLCanvasElement;
+        var P;
+        var ctx;
+
+        function Procces() {
+
+            var canvas_norm = document.createElement("canvas");
+            ctx = el_norm.getContext("2d");
+            var NWidth = el_pic.naturalWidth;
+            var NHeight = el_pic.naturalHeight;
+
+            var Width = el_norm.width;
+            var Height = el_norm.height;
+
+            el_norm.width = NWidth;
+            el_norm.height = NHeight;
+
+            ctx.drawImage(el_pic, 0, 0, NWidth, NHeight, 0, 0, el_norm.width, el_norm.height);
+
+            Normalize();
+            //LimitYellows();
+            //P = new Pixastic(ctx);
+
+            //posterize();
+            //equalize();
+
+            GetInfo();
+        }
+
+        function LimitYellows() {
+
+            var ctx = el_norm.getContext("2d");
+            var Data = ctx.getImageData(0, 0, el_norm.width, el_norm.height);
+            var data = Data.data;
+
+            var RAvg = -1;
+            var GAvg = -1;
+            var BAvg = -1;
+            var Diff_RG_avg = -1
+            var Diff_RB_avg = -1
+            var Diff_GB_avg = -1
+
+            for (var i = 0; i < data.length; i += 4) {
+
+                RAvg = GetAvg(RAvg, data[i]);
+                GAvg = GetAvg(GAvg, data[i + 1]);
+                BAvg = GetAvg(BAvg, data[i + 2]);
+
+                var DT = Distance(data);
+
+                Diff_RG_avg = GetAvg(Diff_RG_avg, DT.RG);
+                Diff_RB_avg = GetAvg(Diff_RB_avg, DT.RB);
+                Diff_GB_avg = GetAvg(Diff_GB_avg, DT.GB);
             }
-        }
 
-        function GetAvg(OldAvg, NewAvg) {
-            if (OldAvg == -1)
-                return NewAvg;
-            else
-                return (OldAvg + NewAvg) / 2;
+            for (var i = 0; i < data.length; i += 4) {
 
-        }
-    }
+                var Mono = data[i] + data[i + 1] + data[i + 2];
+                Mono = Mono / 3;
+                var DT = Distance(data);
+                if (DT.RG < Diff_RG_avg) {
 
-    function Normalize() {
+                    data[i] = Mono; // red
+                    data[i + 1] = Mono;// green
+                    data[i + 2] = Mono; // blue
 
-        var ctx = el_norm.getContext("2d");
-        var Data = ctx.getImageData(0, 0, el_norm.width, el_norm.height);
-        var data = Data.data;
-
-        var RMax = 0;
-        var RMin = 255;
-        var GMax = 0;
-        var GMin = 255;
-        var BMax = 0;
-        var BMin = 255;
-
-        for (var i = 0; i < data.length; i += 4) {
-            if (RMax < data[i])
-                RMax = data[i];
-            if (RMin > data[i])
-                RMin = data[i];
-
-            if (GMax < data[i + 1])
-                GMax = data[i + 1];
-            if (GMin > data[i + 1])
-                GMin = data[i + 1];
-
-            if (BMax < data[i + 2])
-                BMax = data[i + 2];
-            if (BMin > data[i + 2])
-                BMin = data[i + 2];
-        }
-
-        for (var i = 0; i < data.length; i += 4) {
-
-            data[i] = Normal(data[i], RMax, RMin); // red
-            data[i + 1] = Normal(data[i + 1], GMax, GMin);// green
-            data[i + 2] = Normal(data[i + 2], BMax, BMin); // blue
-        }
-
-        ctx.putImageData(Data, 0, 0);
-
-        function Normal(x, max, min) {
-            return ((x - min) / (max - min)) * 255;
-
-        }
-
-        function GetAvg(OldAvg, NewAvg) {
-            if (OldAvg == -1)
-                return NewAvg;
-            else
-                return (OldAvg + NewAvg) / 2;
-
-        }
-    }
-
-    function GetInfo() {
-
-        var ctx = el_norm.getContext("2d");
-        var Data = ctx.getImageData(0, 0, el_norm.width, el_norm.height);
-        var data = Data.data;
-
-        var AVG_R = 0;// Avg red
-        var AVG_G = 0;// AVG green
-        var AVG_B = 0;// AVG blue
-
-        var LAVG_R = 0;// AVG Light red
-        var LAVG_G = 0;// AVG Light green
-        var LAVG_B = 0;// Avg Light blue
-
-        var DAVG_R = 0;// AVG Dark red
-        var DAVG_G = 0;// AVG Dark green
-        var DAVG_B = 0;// AVG Dark blue
-
-        var Count_P = data.length / 3; // all Points
-        var Count_R = 0;// red
-        var Count_G = 0;// green
-        var Count_B = 0;// blue
-        var Count_Y = 0;// yellow
-        var Count_D = 0;// dark;
-        var DarkRange = (document.getElementById("DarkRange").value / 100) * 255;
-        var PureYellow = 255 - ((document.getElementById("PureYellow").value / 100) * 255);
-
-        for (var i = 0; i < data.length; i += 4) {
-
-            var R = data[i]; // red
-            var G = data[i + 1];// green
-            var B = data[i + 2]; // blue
-
-            AVG_R = (AVG_R + R) / 2;
-            AVG_G = (AVG_G + G) / 2;
-            AVG_B = (AVG_B + B) / 2;
-
-            if (R > G && R > B) { Count_R++; }
-            else if (G > B && G > R) { Count_G++; }
-            else if (B > R && B > G) { Count_B++ }
-
-            if (R < DarkRange && G < DarkRange && B < DarkRange) {
-                Count_D++;
-                DAVG_R = (DAVG_R + R) / 2;
-                DAVG_G = (DAVG_G + G) / 2;
-                DAVG_B = (DAVG_B + B) / 2;
-            }
-            else {
-                if (Math.abs(R - G) < PureYellow) {
-                    Count_Y++;
+                    //data[i] = 255; // red
+                    //data[i + 1] = 50;// green
+                    //data[i + 2] = 10; // blue
                 }
-                LAVG_R = (LAVG_R + R) / 2;
-                LAVG_G = (LAVG_G + G) / 2;
-                LAVG_B = (LAVG_B + B) / 2;
+                else {
+                }
+            }
+
+            ctx.putImageData(Data, 0, 0);
+
+            function Distance(data) {
+                return {
+                    RG: Distance(data[i], data[i + 1]),
+                    RB: Distance(data[i], data[i + 2]),
+                    GB: Distance(data[i + 1], data[i + 2])
+                };
+
+                function Distance(x1, x2) {
+                    if (x1 < x2)
+                        return x2 - x1;
+                    else
+                        return x1 - x2;
+
+                }
+            }
+
+            function GetAvg(OldAvg, NewAvg) {
+                if (OldAvg == -1)
+                    return NewAvg;
+                else
+                    return (OldAvg + NewAvg) / 2;
+
             }
         }
 
-        ClearLog();
+        function Normalize() {
 
-        //log("Points: " + Count_P);
+            var ctx = el_norm.getContext("2d");
+            var Data = ctx.getImageData(0, 0, el_norm.width, el_norm.height);
+            var data = Data.data;
 
-        //log("AVG RGB: " + AVG_R + " , " + AVG_G + " , " + AVG_B);
-        //log("LAVG RGB: " + LAVG_R + " , " + LAVG_G + " , " + LAVG_B);
-        //log("DAVG RGB: " + DAVG_R + " , " + DAVG_G + " , " + DAVG_B);
+            var RMax = 0;
+            var RMin = 255;
+            var GMax = 0;
+            var GMin = 255;
+            var BMax = 0;
+            var BMin = 255;
 
-        //log("Count RGBYD: " + Count_R + " , " + Count_G + " , " + Count_B + " , " + Count_Y + " , " + Count_D);
+            for (var i = 0; i < data.length; i += 4) {
+                if (RMax < data[i])
+                    RMax = data[i];
+                if (RMin > data[i])
+                    RMin = data[i];
 
-        log("Yellow Percent: " + Count_Y / (Count_P - Count_D));
-        log("Dark Percent: " + Count_D / Count_P);
-    }
+                if (GMax < data[i + 1])
+                    GMax = data[i + 1];
+                if (GMin > data[i + 1])
+                    GMin = data[i + 1];
 
-    function posterize() {
-        P["posterize"]({
-            levels: 5
-        }).done(function () {
-            el_norm.style.display = "block";
-        }, function (p) {
-            //progress.style.height = (p * 100) + "%";
-        });
-    }
+                if (BMax < data[i + 2])
+                    BMax = data[i + 2];
+                if (BMin > data[i + 2])
+                    BMin = data[i + 2];
+            }
 
-    function equalize() {
-        P["equalize"]({}).done(function () {
-            el_norm.style.display = "block";
-        }, function (p) {
-            //progress.style.height = (p * 100) + "%";
-        });
-    }
+            for (var i = 0; i < data.length; i += 4) {
 
-</script>
+                data[i] = Normal(data[i], RMax, RMin); // red
+                data[i + 1] = Normal(data[i + 1], GMax, GMin);// green
+                data[i + 2] = Normal(data[i + 2], BMax, BMin); // blue
+            }
+
+            ctx.putImageData(Data, 0, 0);
+
+            function Normal(x, max, min) {
+                return ((x - min) / (max - min)) * 255;
+
+            }
+
+            function GetAvg(OldAvg, NewAvg) {
+                if (OldAvg == -1)
+                    return NewAvg;
+                else
+                    return (OldAvg + NewAvg) / 2;
+
+            }
+        }
+
+        function GetInfo() {
+
+            var ctx = el_norm.getContext("2d");
+            var Data = ctx.getImageData(0, 0, el_norm.width, el_norm.height);
+            var data = Data.data;
+
+            var AVG_R = 0;// Avg red
+            var AVG_G = 0;// AVG green
+            var AVG_B = 0;// AVG blue
+
+            var LAVG_R = 0;// AVG Light red
+            var LAVG_G = 0;// AVG Light green
+            var LAVG_B = 0;// Avg Light blue
+
+            var DAVG_R = 0;// AVG Dark red
+            var DAVG_G = 0;// AVG Dark green
+            var DAVG_B = 0;// AVG Dark blue
+
+            var Count_P = data.length / 3; // all Points
+            var Count_R = 0;// red
+            var Count_G = 0;// green
+            var Count_B = 0;// blue
+            var Count_Y = 0;// yellow
+            var Count_D = 0;// dark;
+            var DarkRange = (document.getElementById("DarkRange").value / 100) * 255;
+            var PureYellow = 255 - ((document.getElementById("PureYellow").value / 100) * 255);
+
+            for (var i = 0; i < data.length; i += 4) {
+
+                var R = data[i]; // red
+                var G = data[i + 1];// green
+                var B = data[i + 2]; // blue
+
+                AVG_R = (AVG_R + R) / 2;
+                AVG_G = (AVG_G + G) / 2;
+                AVG_B = (AVG_B + B) / 2;
+
+                if (R > G && R > B) { Count_R++; }
+                else if (G > B && G > R) { Count_G++; }
+                else if (B > R && B > G) { Count_B++ }
+
+                if (R < DarkRange && G < DarkRange && B < DarkRange) {
+                    Count_D++;
+                    DAVG_R = (DAVG_R + R) / 2;
+                    DAVG_G = (DAVG_G + G) / 2;
+                    DAVG_B = (DAVG_B + B) / 2;
+                }
+                else {
+                    if (Math.abs(R - G) < PureYellow) {
+                        Count_Y++;
+                    }
+                    LAVG_R = (LAVG_R + R) / 2;
+                    LAVG_G = (LAVG_G + G) / 2;
+                    LAVG_B = (LAVG_B + B) / 2;
+                }
+            }
+
+            ClearLog();
+
+            //log("Points: " + Count_P);
+
+            //log("AVG RGB: " + AVG_R + " , " + AVG_G + " , " + AVG_B);
+            //log("LAVG RGB: " + LAVG_R + " , " + LAVG_G + " , " + LAVG_B);
+            //log("DAVG RGB: " + DAVG_R + " , " + DAVG_G + " , " + DAVG_B);
+
+            //log("Count RGBYD: " + Count_R + " , " + Count_G + " , " + Count_B + " , " + Count_Y + " , " + Count_D);
+
+            log("Yellow Percent: " + Count_Y / (Count_P - Count_D));
+            log("Dark Percent: " + Count_D / Count_P);
+        }
+
+        function posterize() {
+            P["posterize"]({
+                levels: 5
+            }).done(function () {
+                el_norm.style.display = "block";
+            }, function (p) {
+                //progress.style.height = (p * 100) + "%";
+            });
+        }
+
+        function equalize() {
+            P["equalize"]({}).done(function () {
+                el_norm.style.display = "block";
+            }, function (p) {
+                //progress.style.height = (p * 100) + "%";
+            });
+        }
+
+    </script>
+</body>
+</html>
